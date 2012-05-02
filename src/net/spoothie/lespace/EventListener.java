@@ -1,6 +1,7 @@
 package net.spoothie.lespace;
 
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,6 +19,7 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.util.Vector;
 
+import org.getspout.spoutapi.event.screen.ButtonClickEvent;
 import org.getspout.spoutapi.event.spout.SpoutCraftEnableEvent;
 import org.getspout.spoutapi.gui.Container;
 import org.getspout.spoutapi.gui.ContainerType;
@@ -82,13 +84,12 @@ public class EventListener implements Listener {
 				plugin.hasFlag.put(player, false);
 				world.getBlockAt(flag).setType(Material.STEP);
 				
-				for(Player p : plugin.getServer().getOnlinePlayers()) 
-					((SpoutPlayer)p).spawnTextEntity("Flag", flag.add(0.5, 1.5, 0.5), 1, Integer.MAX_VALUE, new Vector());
+				//for(Player p : plugin.getServer().getOnlinePlayers()) 
+				//	((SpoutPlayer)p).spawnTextEntity("Flag", flag.add(0.5, 1.5, 0.5), 1, Integer.MAX_VALUE, new Vector());
 				
 				player.resetCape();
 				player.setTitle("");
 				player.sendMessage("You saved the flag");
-				plugin.getServer().createInventory(null, 1);
 			}
 		}
 	}
@@ -125,6 +126,27 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onProjectileHit(ProjectileHitEvent event) {
 		event.getEntity().getWorld().createExplosion(event.getEntity().getLocation(), 0);
+	}
+	
+	@EventHandler
+	public void onButtonClick(ButtonClickEvent event) {
+		SpoutPlayer player = event.getPlayer();
+		
+		if(event.getButton().getText() == "Spectate") {
+			player.getMainScreen().closePopup();
+			player.setGameMode(GameMode.CREATIVE);
+			player.setFlying(true);
+			//player.teleport(new Location(player.getWorld(), 0, 0, 0));
+		}
+		else if(event.getButton().getText() == "Play") {
+			player.getMainScreen().closePopup();
+			player.setGameMode(GameMode.SURVIVAL);
+			//player.teleport(new Location(player.getWorld(), 0, 0, 0));
+			player.setFlying(false);
+			
+			for(Player p : plugin.getServer().getOnlinePlayers())
+				p.showPlayer(player);
+		}
 	}
 	
 	private void displayLobby(SpoutPlayer player) {
