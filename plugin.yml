@@ -1,0 +1,6 @@
+name: LeSpace
+version: 0.1
+description: Core plugin for the 'Le Space' CTF server.
+author: spoothie
+main: net.spoothie.lespace.LeSpace
+depend: [Spout]
