@@ -6,7 +6,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -17,15 +16,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
-import org.bukkit.util.Vector;
 
 import org.getspout.spoutapi.event.screen.ButtonClickEvent;
 import org.getspout.spoutapi.event.spout.SpoutCraftEnableEvent;
-import org.getspout.spoutapi.gui.Container;
-import org.getspout.spoutapi.gui.ContainerType;
-import org.getspout.spoutapi.gui.GenericButton;
-import org.getspout.spoutapi.gui.GenericContainer;
-import org.getspout.spoutapi.gui.GenericPopup;
 import org.getspout.spoutapi.player.SpoutPlayer;
 
 public class EventListener implements Listener {
@@ -49,7 +42,7 @@ public class EventListener implements Listener {
 	public void onSpoutCraftEnable(SpoutCraftEnableEvent event) {
 		SpoutPlayer player = event.getPlayer();
 		
-		displayLobby(player);
+		plugin.joinLobby(player);
 		
 		plugin.skyManager.setCloudsVisible(player, false);
 		plugin.skyManager.setMoonVisible(player, false);
@@ -61,6 +54,7 @@ public class EventListener implements Listener {
 		player.setJumpingMultiplier(1.5);
 		player.setSkin("http://www.minecraftskins.info/atlas.png");
 		player.setTitle("");
+		player.setFoodLevel(0);
 		
 		plugin.hasFlag.put(player, false);
 		plugin.inTeam.put(player, 1);
@@ -113,7 +107,7 @@ public class EventListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent event) {
-		if(event.getCause() == DamageCause.FALL)
+		if(event.getCause() == DamageCause.FALL || event.getCause() == DamageCause.STARVATION)
 			event.setCancelled(true);
 	}
 	
@@ -133,41 +127,16 @@ public class EventListener implements Listener {
 		SpoutPlayer player = event.getPlayer();
 		
 		if(event.getButton().getText() == "Spectate") {
-			player.getMainScreen().closePopup();
-			player.setGameMode(GameMode.CREATIVE);
-			player.setFlying(true);
-			//player.teleport(new Location(player.getWorld(), 0, 0, 0));
+			plugin.joinSpectator(player);
 		}
 		else if(event.getButton().getText() == "Play") {
-			player.getMainScreen().closePopup();
+			//Attach team choice to player's screen
+			//plugin.joinGame(player, team);
 			player.setGameMode(GameMode.SURVIVAL);
-			//player.teleport(new Location(player.getWorld(), 0, 0, 0));
-			player.setFlying(false);
-			
-			for(Player p : plugin.getServer().getOnlinePlayers())
-				p.showPlayer(player);
+		}
+		else if(event.getButton().getText() == "Return") {
+			plugin.joinLobby(player);
 		}
 	}
-	
-	private void displayLobby(SpoutPlayer player) {
-		GenericButton play = new GenericButton("Play");
-		play.setX(152).setY(5);
-		play.setWidth(48).setHeight(12);
-		
-		GenericButton spectate = new GenericButton("Spectate");
-		spectate.setX(227).setY(5);
-		spectate.setWidth(48).setHeight(12);
-		
-		Container container = new GenericContainer();
-		container.addChildren(play, spectate);
-		container.setLayout(ContainerType.HORIZONTAL);
-		container.setWidth(0).setHeight(0);
-		
-		GenericPopup lobby = new GenericPopup();
-		lobby.attachWidget(plugin, container);
-		lobby.setTransparent(true);
-		
-		player.getMainScreen().attachPopupScreen(lobby);
-	}
-	
+
 }

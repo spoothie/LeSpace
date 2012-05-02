@@ -3,6 +3,8 @@ package net.spoothie.lespace;
 
 import java.util.HashMap;
 
+import net.spoothie.lespace.gui.Lobby;
+
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,9 +19,9 @@ public class LeSpace extends JavaPlugin {
 
 	public SkyManager skyManager;
 	public SoundManager soundManager;
-	
-	HashMap<SpoutPlayer, Boolean> hasFlag = new HashMap<SpoutPlayer, Boolean>();
-	HashMap<SpoutPlayer, Integer> inTeam = new HashMap<SpoutPlayer, Integer>();
+	public HashMap<SpoutPlayer, Boolean> hasFlag = new HashMap<SpoutPlayer, Boolean>();
+	public HashMap<SpoutPlayer, Integer> inTeam = new HashMap<SpoutPlayer, Integer>();
+	public Location lobby;
 
 	@Override
 	public void onEnable() {
@@ -28,6 +30,7 @@ public class LeSpace extends JavaPlugin {
 		
 		skyManager = SpoutManager.getSkyManager();
 		soundManager = SpoutManager.getSoundManager();
+		lobby = getServer().getWorld("world").getSpawnLocation();
 		
 		setEnvironment(getServer().getWorld("world"));
 	}
@@ -48,26 +51,37 @@ public class LeSpace extends JavaPlugin {
 		}, 0L, 20L);
 	}
 	
-	private void joinLobby(SpoutPlayer player) {
-		new Lobby(player);
+	public void joinLobby(SpoutPlayer player) {
+		player.setGameMode(GameMode.CREATIVE);
+		player.setFlying(true);
+		player.teleport(lobby);
+		player.getMainScreen().attachPopupScreen(new Lobby(this));
 	}
 	
-	private void joinSpectator(SpoutPlayer player) {
+	public void joinSpectator(SpoutPlayer player) {
 		player.getMainScreen().closePopup();
 		player.setGameMode(GameMode.CREATIVE);
 		player.setFlying(true);
 		player.teleport(new Location(player.getWorld(), 0, 0, 0));
 	}
 
-	private void joinGame(SpoutPlayer player, Team team) {
+	public void joinGame(SpoutPlayer player, Team team) {
 		player.getMainScreen().closePopup();
 		player.setGameMode(GameMode.SURVIVAL);
 		player.setFlying(false);
-		team.add(player);
-		player.teleport(new Location(team.getSpawn()));
+		hideGameOverlay(player);
+		team.addPlayer(player);
+		player.teleport(team.getSpawn());
 		
 		for(Player p : getServer().getOnlinePlayers())
 			p.showPlayer(player);
 	}
 	
+	public void hideGameOverlay(SpoutPlayer player) {
+		player.getMainScreen().getHealthBar().setVisible(false).setDirty(false);
+		player.getMainScreen().getArmorBar().setVisible(false).setDirty(false);
+		player.getMainScreen().getExpBar().setVisible(false).setDirty(false);
+		player.getMainScreen().getHungerBar().setVisible(false).setDirty(false);
+		player.getMainScreen().updateWidget(player.getMainScreen().getHealthBar());
+	}
 }
