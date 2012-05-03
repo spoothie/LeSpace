@@ -21,7 +21,7 @@ public class LeSpace extends JavaPlugin {
 	public SoundManager soundManager;
 	public HashMap<SpoutPlayer, Boolean> hasFlag = new HashMap<SpoutPlayer, Boolean>();
 	public HashMap<SpoutPlayer, Integer> inTeam = new HashMap<SpoutPlayer, Integer>();
-	public Location lobby;
+	private Location lobby;
 
 	@Override
 	public void onEnable() {
@@ -56,13 +56,19 @@ public class LeSpace extends JavaPlugin {
 		player.setFlying(true);
 		player.teleport(lobby);
 		player.getMainScreen().attachPopupScreen(new Lobby(this));
+		
+		for(Player p : getServer().getOnlinePlayers())
+			p.hidePlayer(player);
 	}
 	
 	public void joinSpectator(SpoutPlayer player) {
 		player.getMainScreen().closePopup();
 		player.setGameMode(GameMode.CREATIVE);
 		player.setFlying(true);
-		player.teleport(new Location(player.getWorld(), 0, 0, 0));
+		player.teleport(lobby);
+		
+		for(Player p : getServer().getOnlinePlayers())
+			p.hidePlayer(player);
 	}
 
 	public void joinGame(SpoutPlayer player, Team team) {
@@ -71,7 +77,7 @@ public class LeSpace extends JavaPlugin {
 		player.setFlying(false);
 		hideGameOverlay(player);
 		team.addPlayer(player);
-		player.teleport(team.getSpawn());
+		//player.teleport(team.getSpawn());
 		
 		for(Player p : getServer().getOnlinePlayers())
 			p.showPlayer(player);
